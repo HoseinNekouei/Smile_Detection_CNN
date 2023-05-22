@@ -1,12 +1,14 @@
 import numpy as np
 import cv2 as cv
-from mtcnn import MTCNN
+# from mtcnn import MTCNN
 from keras.models import load_model
 
-detector = MTCNN()
+# detector = MTCNN()
+   # Loading the required haar-cascade xml classifier file
 REDCOLOR = (0, 0, 255)
 GREENCOLOR = (0, 255, 0)
-model = load_model(r'deep_learning\Week6\smile_detector\smile_model.h5')
+model = load_model(r'Week6\Smile_Detection_CNN\smile_model.h5')
+haar_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 cap = cv.VideoCapture(0)
 while cap.isOpened():
@@ -15,15 +17,18 @@ while cap.isOpened():
     if not ret:
         break
 
-    frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-    out = detector.detect_faces(frame_rgb)
+    gray_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
-    if len(out) > 0:
-        for face in out:
-            x, y, w, h = face['box']
+    # Applying the face detection method on the grayscale image
+    faces_rect = haar_cascade.detectMultiScale(gray_frame, 1.1, 9)
+
+    # out = detector.detect_faces(frame_rgb)
+
+    if len(faces_rect) > 0:
+        for (x, y, w, h) in faces_rect:
             face = frame[y:y+h, x:x+w]
 
-            face = cv.resize(face, (32, 32))
+            face = cv.resize(face, (64, 64))
             face = face / 255
 
             face = np.array([face])
