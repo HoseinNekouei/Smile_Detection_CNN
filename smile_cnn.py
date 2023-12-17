@@ -19,7 +19,7 @@ def data_load_preprocessing():
     datalist = []
     labels = []
 
-    for index, item in enumerate(gb.glob(r'Week6\Smile_Detection_CNN\dataset\*\*')):
+    for index, item in enumerate(gb.glob(r'dataset\*\*')):
         try:
             img = cv.imread(item)
 
@@ -45,7 +45,7 @@ def data_load_preprocessing():
 
     datalist = np.array(datalist)
 
-    print(len(datalist))
+    # print(len(datalist))
     x_train, x_test, y_train, y_test = train_test_split(
         datalist, labels, test_size=0.2, random_state=42)
 
@@ -65,30 +65,36 @@ def neural_network():
 
     net = models.Sequential([layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(64, 64, 3), input_dim=12288),
                              layers.BatchNormalization(),
-                             layers.Conv2D(
-                                 32, (3, 3), activation='relu', padding='same'),
+                             layers.Dropout(0.25),
+                             layers.Conv2D(32, (3, 3), activation='relu', padding='same'),
                              layers.BatchNormalization(),
                              layers.MaxPool2D(),
+                             layers.Dropout(0.25),
 
                              layers.Conv2D(64, (3, 3), activation='relu'),
                              layers.BatchNormalization(),
+                             layers.Dropout(0.25),
                              layers.Conv2D(64, (3, 3), activation='relu'),
                              layers.BatchNormalization(),
                              layers.MaxPool2D(),
+                             layers.Dropout(0.25),
 
                              layers.Conv2D(128, (3, 3), activation='relu'),
                              layers.BatchNormalization(),
+                             layers.Dropout(0.25),
                              layers.Conv2D(128, (3, 3), activation='relu'),
                              layers.BatchNormalization(),
+                             layers.Dropout(0.25),
                              layers.Conv2D(128, (3, 3), activation='relu'),
                              layers.BatchNormalization(),
                              layers.MaxPool2D(),
+                             layers.Dropout(0.25),
 
                              layers.Flatten(),
 
-                             layers.Dense(128, activation='relu'),
-                             layers.Dropout(0.50),
+                             layers.Dense(1024, activation='relu'),
                              layers.BatchNormalization(),
+                             layers.Dropout(0.50),
 
                              layers.Dense(1, 'sigmoid'),
                              ])
@@ -105,7 +111,7 @@ def neural_network():
     loss, accuracy = net.evaluate(x_test, y_test)
     print(f'Test loss: {loss :.2f}, Test accuracy: {accuracy :.2f}')
 
-    net.save(r'Week6\Smile_Detection_CNN\smile_model.h5')
+    net.save(r'smile_model.h5')
 
     return H
 

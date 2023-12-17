@@ -1,5 +1,6 @@
 import numpy as np
 import cv2 as cv
+import uuid
 # from mtcnn import MTCNN
 from keras.models import load_model
 
@@ -7,7 +8,7 @@ from keras.models import load_model
    # Loading the required haar-cascade xml classifier file
 REDCOLOR = (0, 0, 255)
 GREENCOLOR = (0, 255, 0)
-model = load_model(r'Week6\Smile_Detection_CNN\smile_model.h5')
+model = load_model(r'smile_model.h5')
 haar_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 cap = cv.VideoCapture(0)
@@ -17,31 +18,35 @@ while cap.isOpened():
     if not ret:
         break
 
-    gray_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    # gray_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
     # Applying the face detection method on the grayscale image
-    faces_rect = haar_cascade.detectMultiScale(gray_frame, 1.1, 9)
+    faces_rect = haar_cascade.detectMultiScale(frame, 1.1, 9)
 
     # out = detector.detect_faces(frame_rgb)
 
     if len(faces_rect) > 0:
         for (x, y, w, h) in faces_rect:
-            face = frame[y:y+h, x:x+w]
+            rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+            face = rgb_frame[y:y+h, x:x+w]
 
             face = cv.resize(face, (64, 64))
             face = face / 255
-
             face = np.array([face])
+            # print(face)
 
-            predict = model.predict(face)[0][0]
-            predict = np.round(predict)
+            base_predict = model.predict(face)[0][0]
+            predict = np.round(base_predict)
 
             if predict == 1.0:
                 COLOR = GREENCOLOR
-                label = 'smile'
+                label = f'smile : {base_predict:.2f}'
+                fileName = uuid.uuid1().hex
+                cv.imwrite(f'photo/{fileName}.jpg', frame)
+
             else:
                 COLOR = REDCOLOR
-                label = 'no_smile'
+                label = f'no smile : {base_predict:.2f}'
 
             cv.rectangle(frame, (x, y), (x+w, y+h), COLOR, 2)
 
